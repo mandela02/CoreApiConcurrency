@@ -17,16 +17,14 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     }
         
     public func fetchItem<P: Codable>(path: String,
-                                      param: P,
-                                      token: String?) async throws -> T {
+                                      param: P) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
         
         let request = try createGetRequest(from: path,
                                            method: .get,
-                                           param: param,
-                                           authToken: token)
+                                           param: param)
         do {
             let result = try await URLSession.shared.data(for: request)
             
@@ -47,8 +45,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     }
     
     public func fetchItems<P: Codable>(path: String,
-                                       param: P = Empty() as! P,
-                                       token: String?) async throws -> [T] {
+                                       param: P) async throws -> [T] {
         
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
@@ -56,8 +53,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         
         let request = try createGetRequest(from: path,
                                            method: .get,
-                                           param: param,
-                                           authToken: token)
+                                           param: param)
         do {
             let result = try await URLSession.shared.data(for: request)
             
@@ -78,8 +74,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     }
     
     public func postItem<P: Codable>(path: String,
-                                     parameters: P = Empty() as! P,
-                                     token: String?) async throws -> [T] {
+                                     parameters: P) async throws -> [T] {
         
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
@@ -87,8 +82,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         
         let request = try createPostRequest(from: path,
                                             method: .post,
-                                            parameters: parameters,
-                                            authToken: token)
+                                            parameters: parameters)
         do {
             let result = try await URLSession.shared.data(for: request)
             
@@ -109,8 +103,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     }
     
     public func patchItem<P: Codable>(path: String,
-                                      parameters: P = Empty() as! P,
-                                      token: String?) async throws -> T {
+                                      parameters: P) async throws -> T {
         
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
@@ -118,8 +111,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         
         let request = try createPostRequest(from: path,
                                             method: .patch,
-                                            parameters: parameters,
-                                            authToken: token)
+                                            parameters: parameters)
         do {
             let result = try await URLSession.shared.data(for: request)
             
@@ -140,8 +132,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     }
     
     public func putItem<P: Codable>(path: String,
-                                    parameters: P = Empty() as! P,
-                                    token: String?) async throws -> T {
+                                    parameters: P) async throws -> T {
         
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
@@ -149,8 +140,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         
         let request = try createPostRequest(from: path,
                                             method: .put,
-                                            parameters: parameters,
-                                            authToken: token)
+                                            parameters: parameters)
         do {
             let result = try await URLSession.shared.data(for: request)
             
@@ -170,7 +160,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func deleteItem(path: String, token: String?) async throws -> T {
+    public func deleteItem(path: String) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -232,8 +222,7 @@ extension ApiRepository {
     
     private func createGetRequest<Q: Codable>(from path: String,
                                               method: HTTPMethod,
-                                              param: Q,
-                                              authToken: String? = nil) throws -> URLRequest {
+                                              param: Q) throws -> URLRequest {
         
         var components = URLComponents()
         components.scheme = scheme
@@ -256,7 +245,7 @@ extension ApiRepository {
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
         
         // Add the authorization token if provided
-        if let authToken = authToken {
+        if let authToken = try KeychainManager.shared.retrieveToken() {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
         
@@ -266,8 +255,7 @@ extension ApiRepository {
     
     private func createPostRequest<Q: Codable>(from path: String,
                                                method: HTTPMethod,
-                                               parameters: Q,
-                                               authToken: String? = nil) throws -> URLRequest {
+                                               parameters: Q) throws -> URLRequest {
         
         var components = URLComponents()
         components.scheme = scheme
@@ -292,7 +280,7 @@ extension ApiRepository {
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
         
         // Add the authorization token if provided
-        if let authToken = authToken {
+        if let authToken = try KeychainManager.shared.retrieveToken() {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
         
@@ -301,8 +289,7 @@ extension ApiRepository {
     }
     
     private func createRequest(from path: String,
-                               method: HTTPMethod,
-                               authToken: String? = nil) throws -> URLRequest {
+                               method: HTTPMethod) throws -> URLRequest {
         
         var components = URLComponents()
         components.scheme = scheme
@@ -322,7 +309,7 @@ extension ApiRepository {
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
         
         // Add the authorization token if provided
-        if let authToken = authToken {
+        if let authToken = try KeychainManager.shared.retrieveToken() {
             request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
         }
         
