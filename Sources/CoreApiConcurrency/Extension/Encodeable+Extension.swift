@@ -24,3 +24,31 @@ extension Encodable {
         return jsonData.asString
     }
 }
+
+extension Dictionary where Key: Codable, Value: Codable {
+    func jsonString(toSnakeCase: Bool = false) -> String? {
+        let encoder = JSONEncoder()
+        if toSnakeCase { encoder.keyEncodingStrategy = .convertToSnakeCase }
+        if let jsonData = try? encoder.encode(self) {
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                return jsonString
+            }
+            return nil
+        }
+        return nil
+    }
+}
+
+extension Dictionary {
+    func jsonString(toSnakeCase: Bool = false) -> String? {
+        if let theJSONData = try? JSONSerialization.data(
+            withJSONObject: self,
+            options: []) {
+            let theJSONText = String(data: theJSONData,
+                                     encoding: .ascii)
+            return theJSONText
+        }
+        return nil
+    }
+}
+
