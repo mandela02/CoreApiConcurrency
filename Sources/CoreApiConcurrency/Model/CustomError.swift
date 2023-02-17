@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum CustomError: LocalizedError {
+public enum CustomError: LocalizedError {
     case thrownError(Error)
     case customError(String)
     case serverMessage(String)
